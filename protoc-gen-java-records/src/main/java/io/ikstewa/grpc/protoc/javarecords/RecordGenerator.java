@@ -24,11 +24,15 @@ import com.palantir.javapoet.JavaFile;
 import com.palantir.javapoet.MethodSpec;
 import com.palantir.javapoet.ParameterSpec;
 import com.palantir.javapoet.TypeSpec;
+import com.salesforce.jprotoc.ProtoTypeMap;
 import java.util.Collection;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 
 /** Generator used to convert a Proto */
 class RecordGenerator {
+
+  private static final String OUTER_CLASS_SUFFIX = "Records";
 
   private final DescriptorProtos.FileDescriptorProto protoFile;
   private final String javaPackageName;
@@ -37,36 +41,32 @@ class RecordGenerator {
   public RecordGenerator(DescriptorProtos.FileDescriptorProto proto) {
     this.protoFile = proto;
     this.javaPackageName = extractPackageName(proto);
-    this.multipleClassFiles = true; // TODO
+    this.multipleClassFiles =
+        false; // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/15
   }
 
   public Collection<JavaFile> buildRecords() {
-    if (this.multipleClassFiles) {
-      return this.protoFile.getMessageTypeList().stream()
-          .map(RecordGenerator::buildRecord)
-          .map(
-              typeSpec ->
-                  JavaFile.builder(this.javaPackageName, typeSpec)
-                      .skipJavaLangImports(true)
-                      .build())
-          .toList();
+    final var recordTypes =
+        this.protoFile.getMessageTypeList().stream().map(RecordGenerator::buildRecord).toList();
 
+    if (this.multipleClassFiles) {
+      throw new UnsupportedOperationException(
+          "TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/15");
     } else {
-      throw new UnsupportedOperationException("TODO");
+      // Generate a new outer class file which contains all the records for this proto file
+      final var outerClassname =
+          ProtoTypeMap.getJavaOuterClassname(this.protoFile) + OUTER_CLASS_SUFFIX;
+
+      final var outerType =
+          TypeSpec.classBuilder(outerClassname)
+              .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+              .addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PRIVATE).build())
+              .addTypes(recordTypes)
+              .build();
+
+      return List.of(
+          JavaFile.builder(this.javaPackageName, outerType).skipJavaLangImports(true).build());
     }
-    //         TypeSpec.recordBuilder("Taco")
-    //                 .recordConstructor(MethodSpec.compactConstructorBuilder()
-    //                         .addModifiers(Modifier.PUBLIC)
-    //                         .addParameter(name)
-    //                         .addCode(CodeBlock.builder()
-    //                                 .beginControlFlow("if ($N.isEmpty())", name)
-    //                                 .addStatement(
-    //                                         "throw new $T()",
-    // ClassName.get(IllegalArgumentException.class))
-    //                                 .endControlFlow()
-    //                                 .build())
-    //                         .build())
-    //                 .build())
   }
 
   private static TypeSpec buildRecord(DescriptorProto message) {
