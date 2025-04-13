@@ -13,18 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-package io.ikstewa.grpc.protoc.javarecords;
+package io.grpc.examples.helloworld;
 
 import com.google.common.truth.Truth;
-import io.test.protoc.MoreProtosRecords.AnotherThing;
 import org.junit.jupiter.api.Test;
 
-class MoreProtosTest {
+class HelloWorldProtoRecordsTest {
 
   @Test
-  void basic_test() {
-    Truth.assertThat(io.test.protoc.MoreProtosRecords.AnotherThing.class).isNotNull();
-    Truth.assertThat(io.test.protoc.MoreProtosRecords.AnotherThing.class.isRecord()).isTrue();
-    Truth.assertThat(new AnotherThing("foo")).isEqualTo(new AnotherThing("foo"));
+  void records_exist() {
+    Truth.assertThat(io.grpc.examples.helloworld.HelloWorldProtoRecords.HelloRequest.class)
+        .isNotNull();
+    Truth.assertThat(
+            io.grpc.examples.helloworld.HelloWorldProtoRecords.HelloRequest.class.isRecord())
+        .isTrue();
+    Truth.assertThat(io.grpc.examples.helloworld.HelloWorldProtoRecords.HelloReply.class)
+        .isNotNull();
+    Truth.assertThat(io.grpc.examples.helloworld.HelloWorldProtoRecords.HelloReply.class.isRecord())
+        .isTrue();
   }
 }

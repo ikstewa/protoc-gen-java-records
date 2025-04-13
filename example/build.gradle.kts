@@ -5,6 +5,16 @@ plugins {
 
 dependencies {
   implementation("com.google.protobuf:protobuf-java:3.25.1") // or the latest version
+
+  testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.4")
+  testImplementation("com.google.truth:truth:1.4.4")
+}
+
+testing {
+  suites {
+    val test by getting(JvmTestSuite::class) { useJUnitJupiter("5.11.3") }
+  }
 }
 
 spotless {
