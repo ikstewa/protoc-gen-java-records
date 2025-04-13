@@ -32,6 +32,18 @@ testing {
         }
   }
 }
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+    // systemProperty("log4j2.configurationFile", "log4j2-test.xml")
+    // systemProperty("sun.io.serialization.extendedDebugInfo", "true")
+}
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.required.set(true)
+        csv.required.set(true)
+    }
+}
 
 spotless {
   // chose the Google java formatter, version 1.9
