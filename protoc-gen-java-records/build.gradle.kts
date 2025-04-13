@@ -14,6 +14,7 @@ val protobufVersion: String by rootProject.extra
 
 dependencies {
   implementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
+  implementation("com.salesforce.servicelibs:jprotoc:1.2.2")
   implementation("com.palantir.javapoet:javapoet:0.7.0")
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
