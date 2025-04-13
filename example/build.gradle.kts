@@ -3,31 +3,48 @@ plugins {
   id("com.google.protobuf") version "0.9.4"
 }
 
+dependencies {
+  implementation("com.google.protobuf:protobuf-java:3.25.1") // or the latest version
+}
+
 spotless {
-  // chose the Google java formatter, version 1.9
   java {
     targetExclude("**/build/generated/**")
     importOrder()
     removeUnusedImports()
     googleJavaFormat()
 
-    // and apply a license header
     licenseHeaderFile(rootProject.file("HEADER"))
   }
 }
+
+// --------------------------------------------------------------------------------
+// Used to declare a sub-project dependency for the shadow jar on a local build
+// External would use the maven formula as the "artifact" for the plugin
+evaluationDependsOn(":protoc-gen-java-records") // Needed to load cross-project task
+
+tasks.named("generateProto") {
+  dependsOn(project(":protoc-gen-java-records").tasks.named("shadowJar"))
+}
+
+val localPluginJarPath =
+    project(":protoc-gen-java-records").tasks.named("shadowJar").map {
+      it.outputs.files.singleFile.path
+    }
+
+// End: local build
+// --------------------------------------------------------------------------------
 
 val protobufVersion: String by rootProject.extra
 
 protobuf {
   protoc { artifact = "com.google.protobuf:protoc:$protobufVersion" }
 
-  // val pluginJar = file("${project.rootProject.rootDir}/protoc-gen-java-records/build" +
-  //   "/libs/protoc-gen-java-records-${project.version}-all.jar")
-
   plugins {
     create("java-records") {
-      // path = pluginJar.path
-      artifact = "io.github.ikstewa:protoc-gen-java-records:${project.version}:all@jar"
+      path = localPluginJarPath.get()
+      // Use below for a published version
+      // artifact = "io.github.ikstewa:protoc-gen-java-records:${project.version}:all@jar"
     }
   }
   generateProtoTasks {

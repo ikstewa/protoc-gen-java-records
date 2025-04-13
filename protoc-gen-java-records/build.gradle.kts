@@ -10,6 +10,17 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 application { mainClass = "io.ikstewa.grpc.protoc.javarecords.Main" }
 
+val protobufVersion: String by rootProject.extra
+
+dependencies {
+  implementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
+  implementation("com.palantir.javapoet:javapoet:0.7.0")
+
+  testImplementation("org.junit.jupiter:junit-jupiter-api")
+  testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.4")
+  testImplementation("com.google.truth:truth:1.4.4")
+}
+
 testing {
   suites {
     // Configure the built-in test suite
@@ -65,31 +76,25 @@ publishing {
   }
 }
 
-signing {
-  sign(publishing.publications["protocPlugin"])
-}
+signing { sign(publishing.publications["protocPlugin"]) }
 
-// val protobufVersion: String by rootProject.extra
-// protobuf {
-//     protoc {
-//         artifact = "com.google.protobuf:protoc:$protobufVersion"
-//     }
-//
-//     // val pluginJar = file("${project.rootProject.rootDir}/protoc-gen-java-records/build" +
-//     //   "/libs/protoc-gen-java-records-${project.version}-all.jar")
-//
-//     plugins {
-//         create("java-records") {
-//             // path = pluginJar.path
-//             artifact = "io.github.ikstewa:protoc-gen-java-records:${project.version}:all@jar"
-//         }
-//     }
-//     generateProtoTasks {
-//         ofSourceSet("test").forEach {
-//             it.plugins {
-//                 create("java-records") {
-//                 }
-//             }
-//         }
-//     }
-// }
+tasks.named("generateTestProto") { dependsOn(tasks.named("shadowJar")) }
+
+protobuf {
+  protoc { artifact = "com.google.protobuf:protoc:$protobufVersion" }
+
+  plugins {
+    create("java-records") {
+      path = tasks.named("shadowJar").map { it.outputs.files.singleFile.path }.get()
+    }
+  }
+  generateProtoTasks {
+    ofSourceSet("test").forEach {
+      it.plugins {
+        create("java-records") {
+          // outputSubDir = "java"
+        }
+      }
+    }
+  }
+}
