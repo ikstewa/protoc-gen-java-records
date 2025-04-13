@@ -15,7 +15,7 @@ This follows the same naming conventions as the default java compiler: https://p
 
 To avoid naming conflicts the out class name is suffixed with `Records`, ex: `FooBarOuterClassRecords`
 
-The following proto will generate a record at `foo.bar.SimpleMessageProtoRecords.Simple`:
+The following proto will generate a record at `io.ikstewa.grpc.protoc.test.SimpleMessageProtoRecords.Simple`:
 
 ```proto
 syntax = "proto3";
