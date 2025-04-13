@@ -1,7 +1,38 @@
 # protoc-gen-java-records
 Protoc codegen plugin for generating simple java records
 
+## Usage
+
 Follow these recommendations for the best results: https://protobuf.dev/reference/java/java-proto-names/
+
+
+The plugin can be retrieved from maven using:
+
+```kotlin
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.6"
+    }
+
+    plugins {
+        create("java-records") {
+            artifact = "io.github.ikstewa:protoc-gen-java-records:${protocJavaRecordsVersion}:all@jar"
+        }
+    }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                create("java-records") {
+                    option("json_fieldnames")
+                }
+            }
+        }
+    }
+}
+```
+
+See [example](example/build.gradle.kts) for more details.
+
 
 ## `java_multiple_files`
 
@@ -35,20 +66,13 @@ The plugin behavior can be controlled using options. Example on how to set when 
 
 ```kotlin
 protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.25.6"
-    }
-
-    plugins {
-        create("java-records") {
-            artifact = "io.github.ikstewa:protoc-gen-java-records:${protocJavaRecordsVersion}:all@jar"
-        }
-    }
+    ...
     generateProtoTasks {
         ofSourceSet("main").forEach {
             it.plugins {
                 create("java-records") {
                     option("json_fieldnames")
+                    option("new_cool_feature")
                 }
             }
         }
@@ -66,9 +90,3 @@ Generated record fields will use the json name determined by the compiler. This 
 * https://github.com/palantir/javapoet
 * https://github.com/Fadelis/protoc-gen-java-optional/tree/master
 * https://github.com/salesforce/grpc-java-contrib/tree/master/jprotoc/jprotoc
-
-## TODO
-Support java standard options: https://protobuf.dev/reference/java/java-proto-names/
-* `option java_multiple_files = true;`
-* `option java_outer_classname = "FileNameProto";`
-* `option java_package = "com.google.package";`
