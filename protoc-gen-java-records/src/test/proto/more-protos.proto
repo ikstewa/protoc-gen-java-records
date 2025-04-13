@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package io.test.protoc;
+
+// option java_multiple_files = true;
+// option java_package = "io.ikstewa.grpc.protoc.test";
+// option java_outer_classname = "HelloWorldProto";
+// option objc_class_prefix = "HLW";
+
+
+message AnotherThing {
+  string id = 1;
+}

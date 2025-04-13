@@ -35,6 +35,8 @@ Generated record fields will use the json name determined by the compiler. This 
 * https://github.com/apple/servicetalk/tree/main/servicetalk-grpc-protoc
 * https://github.com/apple/servicetalk/blob/main/servicetalk-examples/grpc/helloworld/build.gradle#L45
 * https://github.com/palantir/javapoet
+* https://github.com/Fadelis/protoc-gen-java-optional/tree/master
+* https://github.com/salesforce/grpc-java-contrib/tree/master/jprotoc/jprotoc
 
 ## TODO
 Support java standard options: https://protobuf.dev/reference/java/java-proto-names/
