@@ -90,9 +90,3 @@ Generated record fields will use the json name determined by the compiler. This 
 * https://github.com/palantir/javapoet
 * https://github.com/Fadelis/protoc-gen-java-optional/tree/master
 * https://github.com/salesforce/grpc-java-contrib/tree/master/jprotoc/jprotoc
-
-## TODO
-Support java standard options: https://protobuf.dev/reference/java/java-proto-names/
-* `option java_multiple_files = true;`
-* `option java_outer_classname = "FileNameProto";`
-* `option java_package = "com.google.package";`
