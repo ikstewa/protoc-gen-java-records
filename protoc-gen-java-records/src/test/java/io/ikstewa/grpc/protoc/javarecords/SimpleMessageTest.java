@@ -16,14 +16,15 @@
 package io.ikstewa.grpc.protoc.javarecords;
 
 import com.google.common.truth.Truth;
-import io.ikstewa.grpc.protoc.test.SimpleMessageRecords.Simple;
+import io.ikstewa.grpc.protoc.test.SimpleMessageProtoRecords.Simple;
 import org.junit.jupiter.api.Test;
 
 class SimpleMessageTest {
 
   @Test
   void basic_test() {
-    Truth.assertThat(io.ikstewa.grpc.protoc.test.SimpleMessageProtoRecords.Simple.class).isNotNull();
+    Truth.assertThat(io.ikstewa.grpc.protoc.test.SimpleMessageProtoRecords.Simple.class)
+        .isNotNull();
     Truth.assertThat(io.ikstewa.grpc.protoc.test.SimpleMessageProtoRecords.Simple.class.isRecord())
         .isTrue();
     Truth.assertThat(new Simple("foo")).isEqualTo(new Simple("foo"));
