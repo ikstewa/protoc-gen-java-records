@@ -1,5 +1,6 @@
 plugins {
   application
+  jacoco
   `maven-publish`
   signing
   id("com.gradleup.shadow") version "8.3.6"
@@ -30,6 +31,20 @@ testing {
           // Use JUnit Jupiter test framework
           useJUnitJupiter("5.11.3")
         }
+  }
+}
+
+tasks.test {
+  finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+  // systemProperty("log4j2.configurationFile", "log4j2-test.xml")
+  // systemProperty("sun.io.serialization.extendedDebugInfo", "true")
+}
+
+tasks.jacocoTestReport {
+  dependsOn(tasks.test) // tests are required to run before generating the report
+  reports {
+    xml.required.set(true)
+    csv.required.set(true)
   }
 }
 
