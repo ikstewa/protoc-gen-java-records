@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-  implementation("com.google.protobuf:protobuf-java:3.25.1") // or the latest version
+  implementation("com.google.protobuf:protobuf-java:4.30.2") // or the latest version
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.4")
