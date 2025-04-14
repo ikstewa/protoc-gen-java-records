@@ -4,7 +4,7 @@ plugins {
   `maven-publish`
   signing
   id("com.gradleup.shadow") version "8.3.6"
-  id("com.google.protobuf") version "0.9.4"
+  id("com.google.protobuf") version "0.9.5"
 }
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
