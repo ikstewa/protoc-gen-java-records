@@ -14,7 +14,9 @@ application { mainClass = "io.ikstewa.grpc.protoc.javarecords.Main" }
 val protobufVersion: String by rootProject.extra
 
 dependencies {
-  implementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
+  implementation(platform("com.google.protobuf:protobuf-bom:$protobufVersion"))
+
+  implementation("com.google.protobuf:protobuf-java-util")
   implementation("com.salesforce.servicelibs:jprotoc:1.2.2")
   implementation("com.palantir.javapoet:javapoet:0.7.0")
 
