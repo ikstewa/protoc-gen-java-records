@@ -23,8 +23,7 @@ message ScalarTypes {
   sfixed64  sfixed64_field = 12;
   bool      bool_field = 13;
   string    string_field = 14;
-  // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/33
-  // bytes     bytes_field = 15;
+  bytes     bytes_field = 15;
 }
 
 message OptionalScalarTypes {
@@ -42,8 +41,7 @@ message OptionalScalarTypes {
   optional sfixed64  sfixed64_field = 12;
   optional bool      bool_field = 13;
   optional string    string_field = 14;
-  // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/33
-  // optional bytes     bytes_field = 15;
+  optional bytes     bytes_field = 15;
 }
 
 message RepeatedScalarTypes {
@@ -61,6 +59,5 @@ message RepeatedScalarTypes {
   repeated sfixed64 repeated_sfixed64 = 12;
   repeated bool     repeated_bool     = 13;
   repeated string   repeated_string   = 14;
-  // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/33
-  // repeated bytes    repeated_bytes    = 15;
+  repeated bytes    repeated_bytes    = 15;
 }
