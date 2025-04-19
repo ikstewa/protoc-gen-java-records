@@ -6,6 +6,11 @@ plugins {
 dependencies {
   implementation("com.google.protobuf:protobuf-java:3.25.1") // or the latest version
 
+  // BEGIN: FIXME: https://github.com/ikstewa/protoc-gen-java-records/issues/8
+  implementation("org.jspecify:jspecify:1.0.0")
+  implementation("com.google.guava:guava:33.4.8-jre")
+  // END: FIXME
+
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.4")
   testImplementation("com.google.truth:truth:1.4.4")
