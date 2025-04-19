@@ -19,12 +19,12 @@ import com.google.common.base.Strings;
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.DescriptorProtos.DescriptorProto;
 import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
-import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Type;
 import com.palantir.javapoet.ClassName;
 import com.palantir.javapoet.CodeBlock;
 import com.palantir.javapoet.JavaFile;
 import com.palantir.javapoet.MethodSpec;
 import com.palantir.javapoet.ParameterSpec;
+import com.palantir.javapoet.ParameterizedTypeName;
 import com.palantir.javapoet.TypeName;
 import com.palantir.javapoet.TypeSpec;
 import com.salesforce.jprotoc.ProtoTypeMap;
@@ -35,6 +35,8 @@ import javax.lang.model.element.Modifier;
 
 /** Generator used to convert a Proto */
 class RecordGenerator {
+
+  private static final ClassName STRING_TYPE = ClassName.get(String.class);
 
   private static final String OUTER_CLASS_SUFFIX = "Records";
 
@@ -92,37 +94,21 @@ class RecordGenerator {
   }
 
   private static ParameterSpec toParameterSpec(FieldDescriptorProto field) {
-    final var isOptional = field.hasProto3Optional() && field.getProto3Optional();
-    final TypeName type =
-        switch (field.getType()) {
-          case TYPE_STRING -> ClassName.get(String.class);
-          case TYPE_BOOL -> isOptional ? ClassName.get(Boolean.class) : TypeName.BOOLEAN;
-          case TYPE_BYTES ->
-              throw new UnsupportedOperationException("Unimplemented case: " + field.getType());
-          case TYPE_DOUBLE -> isOptional ? ClassName.get(Double.class) : TypeName.DOUBLE;
-          case TYPE_ENUM ->
-              throw new UnsupportedOperationException("Unimplemented case: " + field.getType());
-          case TYPE_FIXED32, TYPE_INT32, TYPE_SFIXED32, TYPE_SINT32, TYPE_UINT32 ->
-              isOptional ? ClassName.get(Integer.class) : TypeName.INT;
-          case TYPE_FIXED64, TYPE_INT64, TYPE_SFIXED64, TYPE_SINT64, TYPE_UINT64 ->
-              isOptional ? ClassName.get(Long.class) : TypeName.LONG;
-          case TYPE_FLOAT -> isOptional ? ClassName.get(Float.class) : TypeName.FLOAT;
-          case TYPE_GROUP ->
-              throw new UnsupportedOperationException("Unimplemented case: " + field.getType());
-          case TYPE_MESSAGE ->
-              throw new UnsupportedOperationException("Unimplemented case: " + field.getType());
-        };
+    final TypeName type = mapFieldType(field);
+
     final var paramBuilder = ParameterSpec.builder(type, field.getName());
-    if (isOptional) {
+    if (isOptional(field)) {
       paramBuilder.addAnnotation(org.jspecify.annotations.Nullable.class);
     }
     return paramBuilder.build();
   }
 
   private static CodeBlock recordConstructorCode(FieldDescriptorProto field) {
-    final var isOptional = field.hasProto3Optional() && field.getProto3Optional();
+    final var fieldType = mapFieldType(field);
+    final var isOptional = isOptional(field);
+    final var isRepeated = isRepeated(field);
     // Special case for strings
-    if (field.getType() == Type.TYPE_STRING) {
+    if (STRING_TYPE.equals(fieldType)) {
       final var empty =
           CodeBlock.builder().add("$T.emptyToNull($N)", Strings.class, field.getName()).build();
       if (isOptional) {
@@ -135,13 +121,56 @@ class RecordGenerator {
     } else {
 
       if (!isOptional) {
-        return CodeBlock.builder()
-            .addStatement("$T.requireNonNull($N)", Objects.class, field.getName())
-            .build();
+        if (isRepeated) {
+          return CodeBlock.builder()
+              .beginControlFlow("if ($N == null)", field.getName())
+              .addStatement("$N = $T.of()", field.getName(), List.class)
+              .endControlFlow()
+              .build();
+        } else {
+          return CodeBlock.builder()
+              .addStatement("$T.requireNonNull($N)", Objects.class, field.getName())
+              .build();
+        }
       } else {
         return CodeBlock.builder().build();
       }
     }
+  }
+
+  private static boolean isOptional(FieldDescriptorProto field) {
+    return field.hasProto3Optional() && field.getProto3Optional();
+  }
+
+  private static boolean isRepeated(FieldDescriptorProto field) {
+    return field.getLabel() == FieldDescriptorProto.Label.LABEL_REPEATED;
+  }
+
+  private static TypeName mapFieldType(FieldDescriptorProto field) {
+    // Handle repeated fields
+    if (isRepeated(field)) {
+      return ParameterizedTypeName.get(
+          ClassName.get(java.util.List.class), mapScalarType(field.getType(), true));
+    }
+    return mapScalarType(field.getType(), isOptional(field));
+  }
+
+  private static TypeName mapScalarType(
+      FieldDescriptorProto.Type type, boolean useBoxedPrimitives) {
+    return switch (type) {
+      case TYPE_STRING -> STRING_TYPE;
+      case TYPE_BOOL -> useBoxedPrimitives ? ClassName.get(Boolean.class) : TypeName.BOOLEAN;
+      case TYPE_BYTES -> ClassName.get("com.google.protobuf", "ByteString");
+      case TYPE_DOUBLE -> useBoxedPrimitives ? ClassName.get(Double.class) : TypeName.DOUBLE;
+      case TYPE_ENUM -> throw new UnsupportedOperationException("Unimplemented case: " + type);
+      case TYPE_FIXED32, TYPE_INT32, TYPE_SFIXED32, TYPE_SINT32, TYPE_UINT32 ->
+          useBoxedPrimitives ? ClassName.get(Integer.class) : TypeName.INT;
+      case TYPE_FIXED64, TYPE_INT64, TYPE_SFIXED64, TYPE_SINT64, TYPE_UINT64 ->
+          useBoxedPrimitives ? ClassName.get(Long.class) : TypeName.LONG;
+      case TYPE_FLOAT -> useBoxedPrimitives ? ClassName.get(Float.class) : TypeName.FLOAT;
+      case TYPE_GROUP -> throw new UnsupportedOperationException("Unimplemented case: " + type);
+      case TYPE_MESSAGE -> throw new UnsupportedOperationException("Unimplemented case: " + type);
+    };
   }
 
   private String extractPackageName(DescriptorProtos.FileDescriptorProto proto) {

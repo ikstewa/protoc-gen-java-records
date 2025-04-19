@@ -17,7 +17,9 @@ package io.ikstewa.grpc.protoc.javarecords;
 
 import com.google.common.truth.Truth;
 import io.test.protoc.ScalarTypesOuterClassRecords.OptionalScalarTypes;
+import io.test.protoc.ScalarTypesOuterClassRecords.RepeatedScalarTypes;
 import io.test.protoc.ScalarTypesOuterClassRecords.ScalarTypes;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -72,5 +74,64 @@ class ScalarTypesTest {
             new OptionalScalarTypes(
                 null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null));
+  }
+
+  @Test
+  void repeated_tests() {
+    Truth.assertThat(io.test.protoc.ScalarTypesOuterClassRecords.RepeatedScalarTypes.class)
+        .isNotNull();
+    Truth.assertThat(
+            io.test.protoc.ScalarTypesOuterClassRecords.RepeatedScalarTypes.class.isRecord())
+        .isTrue();
+    Truth.assertThat(
+            new RepeatedScalarTypes(
+                List.of(1.1d),
+                List.of(1.1f),
+                List.of(1),
+                List.of(1l),
+                List.of(2),
+                List.of(2l),
+                List.of(3),
+                List.of(3l),
+                List.of(4),
+                List.of(4l),
+                List.of(5),
+                List.of(5l),
+                List.of(true),
+                List.of("string_value")))
+        .isEqualTo(
+            new RepeatedScalarTypes(
+                List.of(1.1d),
+                List.of(1.1f),
+                List.of(1),
+                List.of(1l),
+                List.of(2),
+                List.of(2l),
+                List.of(3),
+                List.of(3l),
+                List.of(4),
+                List.of(4l),
+                List.of(5),
+                List.of(5l),
+                List.of(true),
+                List.of("string_value")));
+    Truth.assertThat(
+            new RepeatedScalarTypes(
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null))
+        .isEqualTo(
+            new RepeatedScalarTypes(
+                null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null));
+  }
+
+  @Test
+  void null_list_is_empty() {
+    Truth.assertThat(
+            new RepeatedScalarTypes(
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null))
+        .isEqualTo(
+            new RepeatedScalarTypes(
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of()));
   }
 }

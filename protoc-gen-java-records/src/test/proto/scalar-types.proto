@@ -45,3 +45,22 @@ message OptionalScalarTypes {
   // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/33
   // optional bytes     bytes_field = 15;
 }
+
+message RepeatedScalarTypes {
+  repeated double   repeated_double   = 1;
+  repeated float    repeated_float    = 2;
+  repeated int32    repeated_int32    = 3;
+  repeated int64    repeated_int64    = 4;
+  repeated uint32   repeated_uint32   = 5;
+  repeated uint64   repeated_uint64   = 6;
+  repeated sint32   repeated_sint32   = 7;
+  repeated sint64   repeated_sint64   = 8;
+  repeated fixed32  repeated_fixed32  = 9;
+  repeated fixed64  repeated_fixed64  = 10;
+  repeated sfixed32 repeated_sfixed32 = 11;
+  repeated sfixed64 repeated_sfixed64 = 12;
+  repeated bool     repeated_bool     = 13;
+  repeated string   repeated_string   = 14;
+  // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/33
+  // repeated bytes    repeated_bytes    = 15;
+}

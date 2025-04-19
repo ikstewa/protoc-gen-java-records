@@ -46,4 +46,5 @@ nexusPublishing {
   }
 }
 
-val protobufVersion by extra("3.25.6")
+// FIXME: Upgrading breaks generated code for repeated fields??
+val protobufVersion by extra("3.22.5")
