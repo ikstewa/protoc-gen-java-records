@@ -62,4 +62,15 @@ class ScalarTypesTest {
                 null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null));
   }
+
+  @Test
+  void empty_string_is_null_when_optional() {
+    Truth.assertThat(
+            new OptionalScalarTypes(
+                null, null, null, null, null, null, null, null, null, null, null, null, null, ""))
+        .isEqualTo(
+            new OptionalScalarTypes(
+                null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null));
+  }
 }
