@@ -16,6 +16,7 @@
 package io.ikstewa.grpc.protoc.javarecords;
 
 import com.google.common.truth.Truth;
+import com.google.protobuf.ByteString;
 import io.test.protoc.ScalarTypesOuterClassRecords.OptionalScalarTypes;
 import io.test.protoc.ScalarTypesOuterClassRecords.RepeatedScalarTypes;
 import io.test.protoc.ScalarTypesOuterClassRecords.ScalarTypes;
@@ -31,16 +32,62 @@ class ScalarTypesTest {
     Truth.assertThat(io.test.protoc.ScalarTypesOuterClassRecords.ScalarTypes.class.isRecord())
         .isTrue();
     Truth.assertThat(
-            new ScalarTypes(1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, "string_value"))
+            new ScalarTypes(
+                1.1d,
+                1.1f,
+                1,
+                1l,
+                2,
+                2l,
+                3,
+                3l,
+                4,
+                4l,
+                5,
+                5l,
+                true,
+                "string_value",
+                ByteString.copyFrom("bytes_value".getBytes())))
         .isEqualTo(
-            new ScalarTypes(1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, "string_value"));
+            new ScalarTypes(
+                1.1d,
+                1.1f,
+                1,
+                1l,
+                2,
+                2l,
+                3,
+                3l,
+                4,
+                4l,
+                5,
+                5l,
+                true,
+                "string_value",
+                ByteString.copyFrom("bytes_value".getBytes())));
   }
 
   @Test
   void empty_string_fails_when_required() {
     Assertions.assertThrows(
         NullPointerException.class,
-        () -> new ScalarTypes(1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, ""));
+        () ->
+            new ScalarTypes(
+                1.1d,
+                1.1f,
+                1,
+                1l,
+                2,
+                2l,
+                3,
+                3l,
+                4,
+                4l,
+                5,
+                5l,
+                true,
+                "",
+                ByteString.copyFrom("bytes_value".getBytes())));
   }
 
   @Test
@@ -52,16 +99,45 @@ class ScalarTypesTest {
         .isTrue();
     Truth.assertThat(
             new OptionalScalarTypes(
-                1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, "string_value"))
+                1.1d,
+                1.1f,
+                1,
+                1l,
+                2,
+                2l,
+                3,
+                3l,
+                4,
+                4l,
+                5,
+                5l,
+                true,
+                "string_value",
+                ByteString.copyFrom("bytes_value".getBytes())))
         .isEqualTo(
             new OptionalScalarTypes(
-                1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, "string_value"));
+                1.1d,
+                1.1f,
+                1,
+                1l,
+                2,
+                2l,
+                3,
+                3l,
+                4,
+                4l,
+                5,
+                5l,
+                true,
+                "string_value",
+                ByteString.copyFrom("bytes_value".getBytes())));
     Truth.assertThat(
             new OptionalScalarTypes(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null))
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null))
         .isEqualTo(
             new OptionalScalarTypes(
-                null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null));
   }
 
@@ -69,10 +145,11 @@ class ScalarTypesTest {
   void empty_string_is_null_when_optional() {
     Truth.assertThat(
             new OptionalScalarTypes(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, ""))
+                null, null, null, null, null, null, null, null, null, null, null, null, null, "",
+                null))
         .isEqualTo(
             new OptionalScalarTypes(
-                null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null));
   }
 
@@ -98,7 +175,8 @@ class ScalarTypesTest {
                 List.of(5),
                 List.of(5l),
                 List.of(true),
-                List.of("string_value")))
+                List.of("string_value"),
+                List.of(ByteString.copyFrom("bytes_value".getBytes()))))
         .isEqualTo(
             new RepeatedScalarTypes(
                 List.of(1.1d),
@@ -114,13 +192,15 @@ class ScalarTypesTest {
                 List.of(5),
                 List.of(5l),
                 List.of(true),
-                List.of("string_value")));
+                List.of("string_value"),
+                List.of(ByteString.copyFrom("bytes_value".getBytes()))));
     Truth.assertThat(
             new RepeatedScalarTypes(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null))
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null))
         .isEqualTo(
             new RepeatedScalarTypes(
-                null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null));
   }
 
@@ -128,10 +208,12 @@ class ScalarTypesTest {
   void null_list_is_empty() {
     Truth.assertThat(
             new RepeatedScalarTypes(
-                null, null, null, null, null, null, null, null, null, null, null, null, null, null))
+                null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null))
         .isEqualTo(
             new RepeatedScalarTypes(
                 List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
-                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of()));
+                List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
+                List.of()));
   }
 }
