@@ -18,6 +18,7 @@ package io.ikstewa.grpc.protoc.javarecords;
 import com.google.common.truth.Truth;
 import io.test.protoc.ScalarTypesOuterClassRecords.OptionalScalarTypes;
 import io.test.protoc.ScalarTypesOuterClassRecords.ScalarTypes;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ScalarTypesTest {
@@ -31,6 +32,13 @@ class ScalarTypesTest {
             new ScalarTypes(1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, "string_value"))
         .isEqualTo(
             new ScalarTypes(1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, "string_value"));
+  }
+
+  @Test
+  void empty_string_fails_when_required() {
+    Assertions.assertThrows(
+        NullPointerException.class,
+        () -> new ScalarTypes(1.1d, 1.1f, 1, 1l, 2, 2l, 3, 3l, 4, 4l, 5, 5l, true, ""));
   }
 
   @Test

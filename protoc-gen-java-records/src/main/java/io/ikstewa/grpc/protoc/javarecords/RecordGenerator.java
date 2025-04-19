@@ -134,23 +134,13 @@ class RecordGenerator {
       }
     } else {
 
-    }
-    if (!isOptional) {
-      if (field.getType() == Type.TYPE_STRING) {
-        return CodeBlock.builder()
-            .addStatement(
-                "$T.requireNonNull($T.emptyToNull($N))",
-                Objects.class,
-                Strings.class,
-                field.getName())
-            .build();
-      } else {
+      if (!isOptional) {
         return CodeBlock.builder()
             .addStatement("$T.requireNonNull($N)", Objects.class, field.getName())
             .build();
+      } else {
+        return CodeBlock.builder().build();
       }
-    } else {
-      return CodeBlock.builder().build();
     }
   }
 
