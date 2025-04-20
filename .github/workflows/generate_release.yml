@@ -21,6 +21,9 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
 
     steps:
       - name: Checkout code
@@ -44,11 +47,11 @@ jobs:
         run: |
           ./gradlew release -PreleaseType=${{ github.event.inputs.release-type }}
 
-      - name: Create Git tag
-        run: |
-          VERSION=$(./gradlew getVersion)
-          git tag -a "v${VERSION}" -m "Release v${VERSION}"
-          git push origin "v${VERSION}"
+      # - name: Create Git tag
+      #   run: |
+      #     VERSION=$(./gradlew getVersion)
+      #     git tag -a "v${VERSION}" -m "Release v${VERSION}"
+      #     git push origin "v${VERSION}"
 
       - name: Generate GitHub Release and Upload Artifact
         uses: softprops/action-gh-release@v1
