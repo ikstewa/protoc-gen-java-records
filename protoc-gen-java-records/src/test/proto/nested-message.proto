@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package io.test.protoc;
+
+message Early {
+  Other other = 1;
+}
+
+message Outer {
+  message Inner {
+    string foo = 1;
+  }
+  Inner inner = 1;
+}
+
+message Other {
+  Outer outer = 1;
+}

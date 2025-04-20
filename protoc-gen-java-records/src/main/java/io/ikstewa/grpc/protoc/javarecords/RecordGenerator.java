@@ -32,8 +32,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import javax.lang.model.element.Modifier;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /** Generator used to convert a Proto */
+@NullMarked
 class RecordGenerator {
 
   private static final ClassName STRING_TYPE = ClassName.get(String.class);
@@ -41,19 +44,19 @@ class RecordGenerator {
   private static final String OUTER_CLASS_SUFFIX = "Records";
 
   private final DescriptorProtos.FileDescriptorProto protoFile;
-  private final String javaPackageName;
   private final boolean multipleClassFiles;
+  private final ProtoTypeMap typeMap;
 
-  public RecordGenerator(DescriptorProtos.FileDescriptorProto proto) {
+  public RecordGenerator(DescriptorProtos.FileDescriptorProto proto, ProtoTypeMap typeMap) {
     this.protoFile = proto;
-    this.javaPackageName = extractPackageName(proto);
-    this.multipleClassFiles =
-        false; // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/15
+    this.typeMap = typeMap;
+    // TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/15
+    this.multipleClassFiles = false;
   }
 
   public Collection<JavaFile> buildRecords() {
     final var recordTypes =
-        this.protoFile.getMessageTypeList().stream().map(RecordGenerator::buildRecord).toList();
+        this.protoFile.getMessageTypeList().stream().map(this::buildRecord).toList();
 
     if (this.multipleClassFiles) {
       throw new UnsupportedOperationException(
@@ -71,92 +74,101 @@ class RecordGenerator {
               .build();
 
       return List.of(
-          JavaFile.builder(this.javaPackageName, outerType).skipJavaLangImports(true).build());
+          JavaFile.builder(extractPackageName(this.protoFile), outerType)
+              .skipJavaLangImports(true)
+              .build());
     }
   }
 
-  private static TypeSpec buildRecord(DescriptorProto message) {
-    return TypeSpec.recordBuilder(message.getName())
-        .addModifiers(Modifier.PUBLIC)
-        .addAnnotation(org.jspecify.annotations.NullMarked.class)
-        .recordConstructor(
-            MethodSpec.compactConstructorBuilder()
-                .addModifiers(Modifier.PUBLIC)
-                .addParameters(
-                    message.getFieldList().stream().map(RecordGenerator::toParameterSpec).toList())
-                .addCode(
-                    message.getFieldList().stream()
-                        .map(RecordGenerator::recordConstructorCode)
-                        .filter(cb -> !cb.isEmpty())
-                        .collect(CodeBlock.joining("")))
-                .build())
-        .build();
+  private TypeSpec buildRecord(DescriptorProto message) {
+    final var recordConstructorBuilder =
+        MethodSpec.compactConstructorBuilder().addModifiers(Modifier.PUBLIC);
+
+    // Build the record fields
+    message.getFieldList().stream()
+        .map(this::buildRecordField)
+        .forEach(
+            f -> {
+              recordConstructorBuilder.addParameter(f.param());
+              if (f.constructorCode() != null) {
+                recordConstructorBuilder.addCode(f.constructorCode());
+              }
+            });
+
+    final var recordBuilder =
+        TypeSpec.recordBuilder(message.getName())
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(org.jspecify.annotations.NullMarked.class)
+            .recordConstructor(recordConstructorBuilder.build());
+    // Add nested messages as nested records
+    message.getNestedTypeList().stream().map(this::buildRecord).forEach(recordBuilder::addType);
+    return recordBuilder.build();
   }
 
-  private static ParameterSpec toParameterSpec(FieldDescriptorProto field) {
-    final TypeName type = mapFieldType(field);
+  private record RecordField(ParameterSpec param, @Nullable CodeBlock constructorCode) {}
 
-    final var paramBuilder = ParameterSpec.builder(type, field.getName());
-    if (isOptional(field)) {
-      paramBuilder.addAnnotation(org.jspecify.annotations.Nullable.class);
-    }
-    return paramBuilder.build();
-  }
-
-  private static CodeBlock recordConstructorCode(FieldDescriptorProto field) {
+  private RecordField buildRecordField(FieldDescriptorProto field) {
     final var fieldType = mapFieldType(field);
     final var isOptional = isOptional(field);
     final var isRepeated = isRepeated(field);
-    // Special case for strings
+
+    // Build record paramater
+    final ParameterSpec param;
+    final var paramBuilder = ParameterSpec.builder(fieldType, field.getName());
+    if (isOptional) {
+      paramBuilder.addAnnotation(org.jspecify.annotations.Nullable.class);
+    }
+    param = paramBuilder.build();
+
+    // build optional constructor code block
+    final @Nullable CodeBlock constructorCode;
     if (STRING_TYPE.equals(fieldType)) {
+      // Special case for handling empty strings. This should be a configurable "option"...
       final var empty =
           CodeBlock.builder().add("$T.emptyToNull($N)", Strings.class, field.getName()).build();
       if (isOptional) {
-        return CodeBlock.builder().addStatement("$N = $L", field.getName(), empty).build();
+        constructorCode =
+            CodeBlock.builder().addStatement("$N = $L", field.getName(), empty).build();
       } else {
-        return CodeBlock.builder()
-            .addStatement("$N = $T.requireNonNull($L)", field.getName(), Objects.class, empty)
-            .build();
+        constructorCode =
+            CodeBlock.builder()
+                .addStatement("$N = $T.requireNonNull($L)", field.getName(), Objects.class, empty)
+                .build();
       }
     } else {
-
       if (!isOptional) {
         if (isRepeated) {
-          return CodeBlock.builder()
-              .beginControlFlow("if ($N == null)", field.getName())
-              .addStatement("$N = $T.of()", field.getName(), List.class)
-              .endControlFlow()
-              .build();
+          constructorCode =
+              CodeBlock.builder()
+                  .beginControlFlow("if ($N == null)", field.getName())
+                  .addStatement("$N = $T.of()", field.getName(), List.class)
+                  .endControlFlow()
+                  .build();
         } else {
-          return CodeBlock.builder()
-              .addStatement("$T.requireNonNull($N)", Objects.class, field.getName())
-              .build();
+          constructorCode =
+              CodeBlock.builder()
+                  .addStatement("$T.requireNonNull($N)", Objects.class, field.getName())
+                  .build();
         }
       } else {
-        return CodeBlock.builder().build();
+        constructorCode = null;
       }
     }
+
+    return new RecordField(param, constructorCode);
   }
 
-  private static boolean isOptional(FieldDescriptorProto field) {
-    return field.hasProto3Optional() && field.getProto3Optional();
-  }
-
-  private static boolean isRepeated(FieldDescriptorProto field) {
-    return field.getLabel() == FieldDescriptorProto.Label.LABEL_REPEATED;
-  }
-
-  private static TypeName mapFieldType(FieldDescriptorProto field) {
+  private TypeName mapFieldType(FieldDescriptorProto field) {
     // Handle repeated fields
     if (isRepeated(field)) {
       return ParameterizedTypeName.get(
-          ClassName.get(java.util.List.class), mapScalarType(field.getType(), true));
+          ClassName.get(java.util.List.class), mapScalarType(field, true));
     }
-    return mapScalarType(field.getType(), isOptional(field));
+    return mapScalarType(field, isOptional(field));
   }
 
-  private static TypeName mapScalarType(
-      FieldDescriptorProto.Type type, boolean useBoxedPrimitives) {
+  private TypeName mapScalarType(FieldDescriptorProto field, boolean useBoxedPrimitives) {
+    final var type = field.getType();
     return switch (type) {
       case TYPE_STRING -> STRING_TYPE;
       case TYPE_BOOL -> useBoxedPrimitives ? ClassName.get(Boolean.class) : TypeName.BOOLEAN;
@@ -169,8 +181,37 @@ class RecordGenerator {
           useBoxedPrimitives ? ClassName.get(Long.class) : TypeName.LONG;
       case TYPE_FLOAT -> useBoxedPrimitives ? ClassName.get(Float.class) : TypeName.FLOAT;
       case TYPE_GROUP -> throw new UnsupportedOperationException("Unimplemented case: " + type);
-      case TYPE_MESSAGE -> throw new UnsupportedOperationException("Unimplemented case: " + type);
+      case TYPE_MESSAGE -> findJavaClassName(field.getTypeName());
     };
+  }
+
+  private ClassName findJavaClassName(String protoTypeName) {
+    final var javaTypeName = this.typeMap.toJavaTypeName(protoTypeName);
+
+    // The outer class name used in the TypeMap does not have the special record naming. Remap.
+    if (this.multipleClassFiles) {
+      throw new UnsupportedOperationException(
+          "TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/15");
+    } else {
+      // FIXME: We can do better: https://github.com/ikstewa/protoc-gen-java-records/issues/38
+      final var javaOuterClass = ProtoTypeMap.getJavaOuterClassname(this.protoFile);
+      final var recordOuterClass = javaOuterClass + OUTER_CLASS_SUFFIX;
+      if (javaTypeName.contains(javaOuterClass)) {
+        final var recordTypeName = javaTypeName.replace(javaOuterClass, recordOuterClass);
+        return ClassName.bestGuess(recordTypeName);
+      } else {
+        throw new UnsupportedOperationException(
+            "TODO: https://github.com/ikstewa/protoc-gen-java-records/issues/38");
+      }
+    }
+  }
+
+  private static boolean isOptional(FieldDescriptorProto field) {
+    return field.hasProto3Optional() && field.getProto3Optional();
+  }
+
+  private static boolean isRepeated(FieldDescriptorProto field) {
+    return field.getLabel() == FieldDescriptorProto.Label.LABEL_REPEATED;
   }
 
   private String extractPackageName(DescriptorProtos.FileDescriptorProto proto) {

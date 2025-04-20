@@ -19,6 +19,7 @@ import com.google.protobuf.compiler.PluginProtos;
 import com.palantir.javapoet.JavaFile;
 import com.salesforce.jprotoc.Generator;
 import com.salesforce.jprotoc.GeneratorException;
+import com.salesforce.jprotoc.ProtoTypeMap;
 import com.salesforce.jprotoc.ProtocPlugin;
 import java.util.Collections;
 import java.util.List;
@@ -46,10 +47,12 @@ public final class Main extends Generator {
   public List<PluginProtos.CodeGeneratorResponse.File> generateFiles(
       PluginProtos.CodeGeneratorRequest request) throws GeneratorException {
 
+    final var typeMap = ProtoTypeMap.of(request.getProtoFileList());
+
     // Generate record files
     return request.getProtoFileList().stream()
         .filter(protoFile -> request.getFileToGenerateList().contains(protoFile.getName()))
-        .map(RecordGenerator::new)
+        .map(pf -> new RecordGenerator(pf, typeMap))
         .flatMap(gen -> gen.buildRecords().stream().map(this::toResponseFile))
         .toList();
   }
