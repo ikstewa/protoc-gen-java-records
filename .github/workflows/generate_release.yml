@@ -7,6 +7,7 @@ on:
         description: 'Select release type'
         required: true
         default: 'patch'
+        type: choice
         options:
           - major
           - minor
