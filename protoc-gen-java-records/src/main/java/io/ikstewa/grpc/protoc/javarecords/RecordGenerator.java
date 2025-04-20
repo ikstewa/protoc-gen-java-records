@@ -55,8 +55,8 @@ class RecordGenerator {
   }
 
   public Collection<JavaFile> buildRecords() {
-      final var recordTypes =
-          this.protoFile.getMessageTypeList().stream().map(this::buildRecord).toList();
+    final var recordTypes =
+        this.protoFile.getMessageTypeList().stream().map(this::buildRecord).toList();
 
     if (this.multipleClassFiles) {
       throw new UnsupportedOperationException(
