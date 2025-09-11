@@ -12,7 +12,7 @@ dependencies {
   // END: FIXME
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
-  testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.4")
+  testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.5")
   testImplementation("com.google.truth:truth:1.4.4")
 }
 
