@@ -8,7 +8,7 @@ dependencies {
 
   // BEGIN: FIXME: https://github.com/ikstewa/protoc-gen-java-records/issues/8
   implementation("org.jspecify:jspecify:1.0.0")
-  implementation("com.google.guava:guava:33.4.8-jre")
+  implementation("com.google.guava:guava:33.5.0-jre")
   // END: FIXME
 
   testImplementation("org.junit.jupiter:junit-jupiter-api")
