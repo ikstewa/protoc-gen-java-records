@@ -3,7 +3,7 @@ plugins {
   jacoco
   `maven-publish`
   signing
-  id("com.gradleup.shadow") version "8.3.6"
+  id("com.gradleup.shadow") version "9.2.1"
   id("com.google.protobuf") version "0.9.5"
 }
 
