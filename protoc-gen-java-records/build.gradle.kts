@@ -18,7 +18,7 @@ dependencies {
 
   implementation("com.google.protobuf:protobuf-java-util")
   implementation("com.salesforce.servicelibs:jprotoc:1.2.2")
-  implementation("com.palantir.javapoet:javapoet:0.7.0")
+  implementation("com.palantir.javapoet:javapoet:0.8.0")
 
   // BEGIN: FIXME: https://github.com/ikstewa/protoc-gen-java-records/issues/8
   implementation("org.jspecify:jspecify:1.0.0")
