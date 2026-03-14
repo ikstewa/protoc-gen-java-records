@@ -1,12 +1,20 @@
 # protoc-gen-java-records
-Protoc codegen plugin for generating simple java records
+
+A [protoc](https://protobuf.dev/) compiler plugin that generates Java `record` types from protobuf message definitions.
+
+Use `.proto` files as a schema definition language to generate clean, immutable Java records — no hand-writing required. This plugin is not tied to gRPC or any RPC framework; it simply turns proto messages into idiomatic Java records.
+
+## Features
+
+- All proto3 scalar types (int32, int64, string, bytes, bool, float, double, etc.)
+- `optional` fields mapped to `@Nullable` with null-safety annotations ([jspecify](https://jspecify.dev/))
+- `repeated` fields mapped to `List<T>`
+- Nested message types as nested records
+- `java_package` and `java_outer_classname` support
 
 ## Usage
 
-Follow these recommendations for the best results: https://protobuf.dev/reference/java/java-proto-names/
-
-
-The plugin can be retrieved from maven using:
+Add the plugin to your Gradle build using the [protobuf-gradle-plugin](https://github.com/google/protobuf-gradle-plugin):
 
 ```kotlin
 protobuf {
@@ -22,71 +30,96 @@ protobuf {
     generateProtoTasks {
         ofSourceSet("main").forEach {
             it.plugins {
-                create("java-records") {
-                    option("json_fieldnames")
-                }
+                create("java-records")
             }
         }
     }
 }
 ```
 
-See [example](example/build.gradle.kts) for more details.
+See the [example](example/build.gradle.kts) project for a complete working setup.
 
+### Runtime Dependencies
 
-## `java_multiple_files`
+The generated records currently require these dependencies on the consumer's classpath:
 
-TODO: Currently only supports false: https://github.com/ikstewa/protoc-gen-java-records/issues/15
+```kotlin
+implementation("org.jspecify:jspecify:1.0.0")
+implementation("com.google.guava:guava:33.5.0-jre")
+```
 
-### Outer class
+> **Note:** A lightweight runtime library to eliminate these transitive dependencies is planned ([#8](https://github.com/ikstewa/protoc-gen-java-records/issues/8)).
 
-When multiple files is false, the records are generated under a single outer class file.
+## Generated Code
 
-This follows the same naming conventions as the default java compiler: https://protobuf.dev/reference/java/java-generated/#invocation
+Records are generated inside an outer class suffixed with `Records`. This follows the same naming conventions as the default Java protoc compiler ([reference](https://protobuf.dev/reference/java/java-generated/#invocation)).
 
-To avoid naming conflicts the out class name is suffixed with `Records`, ex: `FooBarOuterClassRecords`
-
-The following proto will generate a record at `io.ikstewa.grpc.protoc.test.SimpleMessageProtoRecords.Simple`:
+For example, this proto:
 
 ```proto
 syntax = "proto3";
 
-option java_multiple_files = false;
 option java_package = "io.ikstewa.grpc.protoc.test";
 option java_outer_classname = "SimpleMessageProto";
 
-
 message Simple {
-  string name = 1;
+    string name = 1;
 }
 ```
 
+Generates a record at `io.ikstewa.grpc.protoc.test.SimpleMessageProtoRecords.Simple`.
+
+### Proto Naming Recommendations
+
+Follow the [official protobuf Java naming guide](https://protobuf.dev/reference/java/java-proto-names/) for best results.
+
 ## Options
-The plugin behavior can be controlled using options. Example on how to set when using `protobuf-gradle-plugin`:
+
+Plugin options can be set via the `protobuf-gradle-plugin`:
 
 ```kotlin
-protobuf {
-    ...
-    generateProtoTasks {
-        ofSourceSet("main").forEach {
-            it.plugins {
-                create("java-records") {
-                    option("json_fieldnames")
-                    option("new_cool_feature")
-                }
+generateProtoTasks {
+    ofSourceSet("main").forEach {
+        it.plugins {
+            create("java-records") {
+                option("json_fieldnames")
             }
         }
     }
 }
 ```
 
-### ``json_fieldnames`` (default: disabled)
-Generated record fields will use the json name determined by the compiler. This will typically be lowerCamerCase or the
-`json_name` option is used if specified. See: https://protobuf.dev/programming-guides/json/
+### `json_fieldnames` (default: disabled)
 
-## Reference
-* https://github.com/apple/servicetalk/tree/main/servicetalk-grpc-protoc
-* https://github.com/apple/servicetalk/blob/main/servicetalk-examples/grpc/helloworld/build.gradle#L45
-* https://github.com/palantir/javapoet
-* https://github.com/Fadelis/protoc-gen-java-optional/tree/master
-* https://github.com/salesforce/grpc-java-contrib/tree/master/jprotoc/jprotoc
+Generated record fields will use the JSON name determined by the compiler. This is typically lowerCamelCase, or the `json_name` option if specified. See: [protobuf JSON mapping](https://protobuf.dev/programming-guides/json/).
+
+## Limitations
+
+The following proto features are not yet supported:
+
+- `java_multiple_files = true` ([#15](https://github.com/ikstewa/protoc-gen-java-records/issues/15))
+- Enum types ([#17](https://github.com/ikstewa/protoc-gen-java-records/issues/17))
+- Oneof fields ([#17](https://github.com/ikstewa/protoc-gen-java-records/issues/17))
+- Map fields ([#17](https://github.com/ikstewa/protoc-gen-java-records/issues/17))
+- `Any` type ([#17](https://github.com/ikstewa/protoc-gen-java-records/issues/17))
+- Cross-file message references ([#38](https://github.com/ikstewa/protoc-gen-java-records/issues/38))
+- `deprecated` option ([#18](https://github.com/ikstewa/protoc-gen-java-records/issues/18))
+
+## Building from Source
+
+Requires Java 21.
+
+```sh
+./gradlew build
+```
+
+## License
+
+[Apache License 2.0](LICENSE)
+
+## References
+
+- [protobuf Java generated code reference](https://protobuf.dev/reference/java/java-generated/)
+- [jprotoc](https://github.com/salesforce/grpc-java-contrib/tree/master/jprotoc/jprotoc) — protoc plugin scaffolding
+- [Palantir JavaPoet](https://github.com/palantir/javapoet) — Java source code generation (with record support)
+- [protoc-gen-java-optional](https://github.com/Fadelis/protoc-gen-java-optional) — similar protoc plugin for reference
