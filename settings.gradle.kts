@@ -6,6 +6,23 @@
  * This project uses @Incubating APIs which are subject to change.
  */
 
+pluginManagement {
+    // TODO: Remove JitPack and resolutionStrategy after gradle-release plugin publishes
+    //  a version > 3.1.0 with configuration cache support for Gradle 9.
+    //  See: https://github.com/researchgate/gradle-release/pull/405
+    repositories {
+        maven("https://jitpack.io")
+        gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "net.researchgate.release") {
+                useModule("com.github.researchgate:gradle-release:3572e97d47")
+            }
+        }
+    }
+}
+
 plugins {
     // Apply the foojay-resolver plugin to allow automatic download of JDKs
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
