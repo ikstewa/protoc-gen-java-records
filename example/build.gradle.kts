@@ -1,36 +1,36 @@
 plugins {
-  java
-  id("com.google.protobuf") version "0.9.6"
+    java
+    id("com.google.protobuf") version "0.9.6"
 }
 
 dependencies {
-  implementation("com.google.protobuf:protobuf-java:3.25.1") // or the latest version
+    implementation("com.google.protobuf:protobuf-java:3.25.1") // or the latest version
 
-  // BEGIN: FIXME: https://github.com/ikstewa/protoc-gen-java-records/issues/8
-  implementation("org.jspecify:jspecify:1.0.0")
-  implementation("com.google.guava:guava:33.5.0-jre")
-  // END: FIXME
+    // BEGIN: FIXME: https://github.com/ikstewa/protoc-gen-java-records/issues/8
+    implementation("org.jspecify:jspecify:1.0.0")
+    implementation("com.google.guava:guava:33.5.0-jre")
+    // END: FIXME
 
-  testImplementation("org.junit.jupiter:junit-jupiter-api")
-  testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.5")
-  testImplementation("com.google.truth:truth:1.4.5")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testImplementation("com.google.truth.extensions:truth-java8-extension:1.4.5")
+    testImplementation("com.google.truth:truth:1.4.5")
 }
 
 testing {
-  suites {
-    val test by getting(JvmTestSuite::class) { useJUnitJupiter("5.11.3") }
-  }
+    suites {
+        val test by getting(JvmTestSuite::class) { useJUnitJupiter("5.11.3") }
+    }
 }
 
 spotless {
-  java {
-    targetExclude("**/build/generated/**")
-    importOrder()
-    removeUnusedImports()
-    googleJavaFormat()
+    java {
+        targetExclude("**/build/generated/**")
+        importOrder()
+        removeUnusedImports()
+        googleJavaFormat()
 
-    licenseHeaderFile(rootProject.file("HEADER"))
-  }
+        licenseHeaderFile(rootProject.file("HEADER"))
+    }
 }
 
 // --------------------------------------------------------------------------------
@@ -39,12 +39,12 @@ spotless {
 evaluationDependsOn(":protoc-gen-java-records") // Needed to load cross-project task
 
 tasks.named("generateProto") {
-  dependsOn(project(":protoc-gen-java-records").tasks.named("shadowJar"))
+    dependsOn(project(":protoc-gen-java-records").tasks.named("shadowJar"))
 }
 
 val localPluginJarPath =
     project(":protoc-gen-java-records").tasks.named("shadowJar").map {
-      it.outputs.files.singleFile.path
+        it.outputs.files.singleFile.path
     }
 
 // End: local build
@@ -53,23 +53,23 @@ val localPluginJarPath =
 val protobufVersion: String by rootProject.extra
 
 protobuf {
-  protoc { artifact = "com.google.protobuf:protoc:$protobufVersion" }
+    protoc { artifact = "com.google.protobuf:protoc:$protobufVersion" }
 
-  plugins {
-    create("java-records") {
-      path = localPluginJarPath.get()
-      // Use below for a published version
-      // artifact = "io.github.ikstewa:protoc-gen-java-records:${project.version}:all@jar"
-    }
-  }
-  generateProtoTasks {
-    ofSourceSet("main").forEach {
-      it.plugins {
+    plugins {
         create("java-records") {
-          // Properties here?
-          // outputSubDir = "java"
+            path = localPluginJarPath.get()
+            // Use below for a published version
+            // artifact = "io.github.ikstewa:protoc-gen-java-records:${project.version}:all@jar"
         }
-      }
     }
-  }
+    generateProtoTasks {
+        ofSourceSet("main").forEach {
+            it.plugins {
+                create("java-records") {
+                    // Properties here?
+                    // outputSubDir = "java"
+                }
+            }
+        }
+    }
 }
