@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation("com.google.protobuf:protobuf-java:4.34.0") // or the latest version
+    implementation("com.google.protobuf:protobuf-java:4.34.1") // or the latest version
 
     // BEGIN: FIXME: https://github.com/ikstewa/protoc-gen-java-records/issues/8
     implementation("org.jspecify:jspecify:1.0.0")
